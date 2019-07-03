@@ -1,0 +1,30 @@
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3();
+var sagemakerruntime = new AWS.SageMakerRuntime();
+var endpointName = "imageclassification";// process.env['SMEP']
+var objectCategories = ['Amazon Logo', 'Whole Foods Logo', 'Zappos Logo', 'NoLogo'];
+function detectCustomLabels(bucket, key, callback) {
+        s3.getObject({Bucket: bucket, Key: key}, function(err, data) {
+                if(err) {
+                      console.log("Error getting object:" + err);
+                      callback(err, null);
+                } else {
+                      var payload = data.Body;
+                      sagemakerruntime.invokeEndpoint({EndpointName: endpointName, ContentType: 'application/x-image', Body: payload}, function(err, data) {
+                             if(err) {
+                                     console.log("Error calling sagemaker endpoint:" + err);
+                                     callback(err, null);
+                             } else {
+                                     var response = JSON.parse(data.Body.toString('utf8'));
+                                     var index = response.indexOf(Math.max.apply(null, response));
+                                     callback(null, {Labels: [{Name: objectCategories[index], Confidence: response[index].toString()}]});
+                              }
+                       });
+               }
+       });
+}
+exports.handler = function(event, context, callback) {
+  var bucket = event.Records[0].s3.bucket.name;
+  var key = decodeURI(event.Records[0].s3.object.key);
+  detectCustomLabels(bucket, key, callback);  
+};

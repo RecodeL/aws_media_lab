@@ -1,0 +1,25 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SagmakerAPI",
+            "Effect": "Allow",
+            "Action": [
+                "sagemaker:ListEndpointConfigs",
+                "sagemaker:ListTags",
+                "sagemaker:ListModels",
+                "sagemaker:ListTrainingJobs",
+                "sagemaker:ListNotebookInstances",
+                "sagemaker:ListEndpoints",
+                "sagemaker:InvokeEndpoint"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SagemakerEndpoint",
+            "Effect": "Allow",
+            "Action": "sagemaker:InvokeEndpoint",
+            "Resource": "arn:aws:sagemaker:*:*:endpoint/*"
+        }
+    ]
+}
